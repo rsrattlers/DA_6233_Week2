@@ -1,0 +1,67 @@
+---
+title: "Tech Financials"
+author: "Richard Tarbell"
+date: "8/31/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(haven)
+library(psych)
+library(here)
+# OPTION + CTRL + i
+```
+
+##Reading data
+
+We have a stata file so we use 'haven' package to read it
+```{r}
+d1 <- haven::read_dta("tech_co_cstat_dta.zip")
+```
+
+
+
+```{r}
+class(d1)
+```
+
+```{r}
+names(d1)
+```
+
+
+```{r}
+head(d1, n=10)
+```
+
+
+```{r}
+tail(d1, n=3)
+```
+
+
+```{r}
+d1[1:10,]
+```
+
+
+```{r}
+attributes(d1$gvkey)
+```
+
+```{r}
+attributes(d1$datadate)
+```
+
+```{r}
+attributes(d1$datadate)$label <- "Fiscal year end date"
+```
+
+```{r}
+attributes(d1$datadate)
+```
+
+
