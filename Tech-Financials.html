@@ -742,6 +742,110 @@ if (a &gt;= 50) {
   } else(print(&quot;the number is smaller than 50&quot;))</code></pre>
 <pre><code>## [1] &quot;the number is greater than or equal to 50&quot;</code></pre>
 </div>
+<div id="filter" class="section level3">
+<h3>Filter()</h3>
+<pre class="r"><code>mean(d1$sale, na.rm = TRUE)</code></pre>
+<pre><code>## [1] 64003.36</code></pre>
+<pre class="r"><code>d5 &lt;- d1 %&gt;%
+  filter(sale &gt; 0)</code></pre>
+<pre class="r"><code>mean(d5$sale)</code></pre>
+<pre><code>## [1] 64003.36</code></pre>
+<pre class="r"><code>d1$sale %&gt;%
+  is.na()</code></pre>
+<pre><code>##   [1] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+##  [13] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+##  [25] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+##  [37] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE  TRUE  TRUE FALSE FALSE
+##  [49] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+##  [61] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+##  [73] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+##  [85] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+##  [97] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+## [109] FALSE</code></pre>
+<pre class="r"><code>d6 &lt;- d1 %&gt;%
+  filter(!is.na(sale))</code></pre>
+<p>Output the missing value status</p>
+<pre class="r"><code>!is.na(d1$sale)</code></pre>
+<pre class="r"><code>head(d1$sale)</code></pre>
+<pre><code>## [1]  65225 108249 156508 170910 182795 233715</code></pre>
+</div>
+<div id="mutate" class="section level3">
+<h3>Mutate()</h3>
+<p>ALlows us to create new variables</p>
+<pre class="r"><code>d7 &lt;- d5 %&gt;%
+  mutate(profit_margin = oibdp / sale,
+         cash_holding = che / at,
+         rnd_intensity = xrd / sale,
+         debt_lt = ifelse(is.na(dltt), 0, dltt)) # if dltt is NA set it to 0. if not keep it as dltt</code></pre>
+<pre class="r"><code>head(d5$dltt)</code></pre>
+<pre><code>## [1]     0     0     0 16960 28987 53463</code></pre>
+<pre class="r"><code>is.na(d5$dltt) %&gt;% sum()</code></pre>
+<pre><code>## [1] 1</code></pre>
+<pre class="r"><code>d8 &lt;- d7 %&gt;%
+  arrange(conm, datadate) %&gt;% # order the df by company name and dates
+  group_by(conm) %&gt;% # group by company name so the lag function doesn&#39;t go to a previous company
+  mutate(sales_gr = (sale - lag(sale)) / lag(sale)) # sales growth</code></pre>
+<pre class="r"><code>d8 %&gt;%
+  select(conm, datadate, sale, sales_gr) %&gt;%
+  head(20)</code></pre>
+<pre><code>## # A tibble: 20 × 4
+## # Groups:   conm [2]
+##    conm           datadate     sale sales_gr
+##    &lt;chr&gt;          &lt;date&gt;      &lt;dbl&gt;    &lt;dbl&gt;
+##  1 AMAZON.COM INC 2010-12-31  34204  NA     
+##  2 AMAZON.COM INC 2011-12-31  48077   0.406 
+##  3 AMAZON.COM INC 2012-12-31  61093   0.271 
+##  4 AMAZON.COM INC 2013-12-31  74452   0.219 
+##  5 AMAZON.COM INC 2014-12-31  88988   0.195 
+##  6 AMAZON.COM INC 2015-12-31 107006   0.202 
+##  7 AMAZON.COM INC 2016-12-31 135987   0.271 
+##  8 AMAZON.COM INC 2017-12-31 177866   0.308 
+##  9 AMAZON.COM INC 2018-12-31 232887   0.309 
+## 10 AMAZON.COM INC 2019-12-31 280522   0.205 
+## 11 AMAZON.COM INC 2020-12-31 386064   0.376 
+## 12 APPLE INC      2010-09-30  65225  NA     
+## 13 APPLE INC      2011-09-30 108249   0.660 
+## 14 APPLE INC      2012-09-30 156508   0.446 
+## 15 APPLE INC      2013-09-30 170910   0.0920
+## 16 APPLE INC      2014-09-30 182795   0.0695
+## 17 APPLE INC      2015-09-30 233715   0.279 
+## 18 APPLE INC      2016-09-30 215091  -0.0797
+## 19 APPLE INC      2017-09-30 229234   0.0658
+## 20 APPLE INC      2018-09-30 265359   0.158</code></pre>
+<pre class="r"><code>d7 %&gt;%
+  select(sale) %&gt;%
+  summarize(sale_mean = mean(sale),
+            sale_median = median(sale),
+            sale_sd = sd(sale))</code></pre>
+<pre><code>## # A tibble: 1 × 3
+##   sale_mean sale_median sale_sd
+##       &lt;dbl&gt;       &lt;dbl&gt;   &lt;dbl&gt;
+## 1    64003.      24996.  77795.</code></pre>
+<pre class="r"><code>d7 %&gt;%
+  select(sale, at, xrd) %&gt;%
+  summarize(across(everything(), mean))</code></pre>
+<pre><code>## # A tibble: 1 × 3
+##     sale     at   xrd
+##    &lt;dbl&gt;  &lt;dbl&gt; &lt;dbl&gt;
+## 1 64003. 90216. 6105.</code></pre>
+<pre class="r"><code>d7 %&gt;%
+  group_by(conm) %&gt;%
+  summarize(sale_mean = mean(sale),
+            sale_median = median(sale),
+            sale_sd = sd(sale)) %&gt;%
+  as.data.frame()</code></pre>
+<pre><code>##                           conm  sale_mean sale_median    sale_sd
+## 1               AMAZON.COM INC 147922.364  107006.000 111147.546
+## 2                    APPLE INC 196525.000  215091.000  67192.090
+## 3                 FACEBOOK INC  29984.636   17928.000  29351.220
+## 4  INTL BUSINESS MACHINES CORP  88636.000   81741.000  12272.279
+## 5               MICROSOFT CORP  98883.833   88200.500  32022.469
+## 6                  NETFLIX INC   9736.858    6779.511   7587.814
+## 7          PAYPAL HOLDINGS INC  12821.750   11948.500   5110.689
+## 8                 QUALCOMM INC  21100.000   22732.000   4750.188
+## 9                    TESLA INC   9666.025    4046.025  11178.467
+## 10                 TWITTER INC   1990.013    2330.666   1301.420</code></pre>
+</div>
 
 
 
